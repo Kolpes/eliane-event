@@ -37,11 +37,12 @@ model TicketType {
 model Buyer {
   id                String   @id @default(uuid())
   name              String
-  bi                String   // Nº do B.I.
+  bi                String   @unique // Nº do B.I.
   whatsapp          String   // Com DDI
   province          String
   residence         String   // Moradia
   isInukaMember     Boolean
+  ticketsPurchased  Int      @default(0) // TODO: quando existir lógica de cancelamento (status = 'CANCELLED'), decrementar este valor atomicamente
   orders            Order[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
