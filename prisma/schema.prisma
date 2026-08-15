@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  date        DateTime
+  location    String
+  theme       String
+  ticketTypes TicketType[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model TicketType {
+  id          String   @id @default(uuid())
+  eventId     String
+  name        String   // e.g., "Classic range", "Exclusivo range", "Original Signature"
+  pax         Int      @default(1) // 1, 2, or 3
+  price       Decimal  // Em Kwanza (Kz)
+  quantity    Int      // Quantidade total disponível deste lote
+  sold        Int      @default(0) // Controla quantos foram vendidos
+  deadline    DateTime // Data limite de venda
+  event       Event    @relation(fields: [eventId], references: [id])
+  tickets     Ticket[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Buyer {
+  id                String   @id @default(uuid())
+  name              String
+  bi                String   // Nº do B.I.
+  whatsapp          String   // Com DDI
+  province          String
+  residence         String   // Moradia
+  isInukaMember     Boolean
+  orders            Order[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  buyerId   String
+  status    String   @default("PENDING") // PENDING, PAID, CANCELLED
+  total     Decimal
+  buyer     Buyer    @relation(fields: [buyerId], references: [id])
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id           String     @id @default(uuid())
+  orderId      String
+  ticketTypeId String
+  qrCode       String     @unique @default(uuid()) // Unique ID para o QR Code
+  status       String     @default("RESERVED") // RESERVED, VALID, USED
+  order        Order      @relation(fields: [orderId], references: [id])
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
